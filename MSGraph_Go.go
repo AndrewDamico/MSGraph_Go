@@ -56,12 +56,12 @@ func main() {
 		case 0:
 			// Exit the program
 			fmt.Println("Goodbye...")
-		case 2:
-			// Run any Graph code
-			GetCalendars(graphHelper)
 		case 1:
 			// Run any Graph code
 			SyncEvents(graphHelper)
+		case 2:
+			// Run any Graph code
+			GetCalendars(graphHelper)
 		default:
 			fmt.Println("Invalid choice! Please try again.")
 		}
