@@ -198,9 +198,7 @@ func (g *GraphHelper) GetEvents(user string) (models.EventCollectionResponseable
 
 	// requests that body be returned in text, not html
 	headers := map[string]string{
-		"Prefer":
-		//"outlook.timezone=\"America/Chicago\", //PostgreSQL saves time in UTC
-		"outlook.body-content-type=\"text\"",
+		"Prefer": "outlook.timezone=\"America/Chicago\", outlook.body-content-type=\"text\"",
 	}
 
 	query := events.EventsRequestBuilderGetQueryParameters{
