@@ -16,10 +16,6 @@ import (
 )
 
 func main() {
-
-	fmt.Println("Go Graph Tutorial")
-	fmt.Println()
-
 	// Load .env files
 	// .env.local takes precedence (if present)
 	godotenv.Load(".env.local")
@@ -27,20 +23,14 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env")
 	}
-	fmt.Println("Loading Graph Helper")
-	fmt.Println()
 
+	// create an instance of the graph API
 	graphHelper := graphhelper.NewGraphHelper()
-	fmt.Println("Initializing Graph Helper")
-	fmt.Println()
-
 	initializeGraph(graphHelper)
 
-	fmt.Println("Graph Helper Initialized")
-	fmt.Println()
+	// Build user menu
 
 	var choice int64 = -1
-
 	for {
 		fmt.Println("Please choose one of the following options:")
 		fmt.Println("0. Exit")
@@ -79,7 +69,9 @@ func getEnv(key string, defaultVal string) string {
 
 	return defaultVal
 }
+
 func getEnvAsInt(name string, defaultVal int) int {
+	// Converts string to integer, important for port variable.
 	valueStr := getEnv(name, "")
 	if value, err := strconv.Atoi(valueStr); err == nil {
 		return value
@@ -96,7 +88,10 @@ func initializeGraph(graphHelper *graphhelper.GraphHelper) {
 }
 
 func GetCalendars(graphHelper *graphhelper.GraphHelper) {
-	items, err := graphHelper.GetCalendars()
+	// Returns list of calendars for the user
+	// loads user ID from local env
+	user := os.Getenv("USER_ID")
+	items, err := graphHelper.GetCalendars(user)
 	if err != nil {
 		log.Panicf("Error making Graph call: %v", err)
 	}
@@ -107,7 +102,10 @@ func GetCalendars(graphHelper *graphhelper.GraphHelper) {
 }
 
 func SyncEvents(graphHelper *graphhelper.GraphHelper) {
-	items, err := graphHelper.GetEvents()
+	// Returns list of events for the user
+	//loads user ID from local env
+	user := os.Getenv("USER_ID")
+	items, err := graphHelper.GetEvents(user)
 	if err != nil {
 		log.Panicf("Error making Graph call: %v", err)
 	}
@@ -126,6 +124,7 @@ func SyncEvents(graphHelper *graphhelper.GraphHelper) {
 		// fmt.Printf("All Day: %s\n", *items.GetIsAllDay())
 		//show_as := *items.GetShowAs()
 
+		// Stores events in the db
 		sync_calendar(id, subject, body, changekey, organizer, starttime, endtime)
 	}
 }
@@ -141,13 +140,15 @@ func sync_calendar(
 	// allday *string,
 	// showas string
 ) error {
-
+	// Function to store an event in the PostgreSQL database
+	// Retrieves keys from the .env file
 	host := os.Getenv("A2DAM_HOST")
 	port := getEnvAsInt("A2DAM_PORT", 1)
 	user := os.Getenv("A2DAM_USER")
 	password := os.Getenv("A2DAM_PASSWORD")
 	dbname := os.Getenv("A2DAM_DBNAME")
 
+	// Creates a cursor for the PostgreSQL db
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -157,6 +158,7 @@ func sync_calendar(
 	}
 	defer db.Close()
 
+	// defines PostgreSQL statement
 	sqlStatement := `
 INSERT INTO "msGraph_outlookevent" (id, subject, body, change_key, organizer, start_time, end_time, show_as)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -170,10 +172,13 @@ ON CONFLICT (id) DO UPDATE
     show_as = excluded.show_as
 RETURNING id`
 
+	// Executes statement
 	err = db.QueryRow(sqlStatement, id, subject, body, changekey, organizer, starttime, endtime, "default").Scan(&id)
 	if err != nil {
 		panic(err)
 	}
+
+	//Returns objects created
 	fmt.Println("Event Created", subject)
 
 	return nil
