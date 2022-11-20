@@ -5,6 +5,11 @@
 *.so
 *.dylib
 
+# Secret
+.env
+/pkg
+/.git
+
 # Test binary, built with `go test -c`
 *.test
 
