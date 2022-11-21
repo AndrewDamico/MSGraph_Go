@@ -1,6 +1,7 @@
 package main
 
 import (
+    "C"
 	"database/sql"
 	"fmt"
 	//"github.com/cjlapao/common-go/identity"
@@ -15,19 +16,21 @@ import (
 	// "strings"
 )
 
+//export main
 func main() {
 	// Load .env files
 	// .env.local takes precedence (if present)
 
-	godotenv.Load(".env.local")
-	err := godotenv.Load()
+	// godotenv.Load(".env")
+	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatal("Error loading .env")
+		log.Fatal("Error loading .env.local")
 	}
 
 	// create an instance of the graph API
 	graphHelper := graphhelper.NewGraphHelper()
 	initializeGraph(graphHelper)
+	//loadMenu(graphHelper)
 	SyncEvents(graphHelper)
 }
 
@@ -110,6 +113,7 @@ func GetCalendars(graphHelper *graphhelper.GraphHelper) {
 		fmt.Printf("Events: %s\n", *items.GetName())
 	}
 }
+
 
 func SyncEvents(graphHelper *graphhelper.GraphHelper) {
 	// Returns list of events for the user
