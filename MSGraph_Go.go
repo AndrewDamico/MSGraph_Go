@@ -18,6 +18,7 @@ import (
 func main() {
 	// Load .env files
 	// .env.local takes precedence (if present)
+
 	godotenv.Load(".env.local")
 	err := godotenv.Load()
 	if err != nil {
@@ -27,8 +28,17 @@ func main() {
 	// create an instance of the graph API
 	graphHelper := graphhelper.NewGraphHelper()
 	initializeGraph(graphHelper)
+	SyncEvents(graphHelper)
+}
+
+func loadMenu(graphHelper *graphhelper.GraphHelper) {
 
 	// Build user menu
+	godotenv.Load(".env.local")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env")
+	}
 
 	var choice int64 = -1
 	for {
